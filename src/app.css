@@ -1,0 +1,9 @@
+html,
+body {
+    background-color: #171717;
+}
+
+.fill {
+    width: 100%;
+    height: 100%;
+}
