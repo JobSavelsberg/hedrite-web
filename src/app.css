@@ -1,6 +1,9 @@
 html,
 body {
+    margin: 0;
+    padding: 0;
     background-color: #171717;
+    overflow: hidden;
 }
 
 .fill {
