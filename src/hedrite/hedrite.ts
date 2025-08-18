@@ -23,7 +23,10 @@ export class Hedrite {
         this.camera.position.z = 5;
 
         // Create renderer
-        this.renderer = new THREE.WebGLRenderer({ antialias: true });
+        this.renderer = new THREE.WebGLRenderer({
+            antialias: true,
+            alpha: true,
+        });
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.setClearColor(0x000000, 0);
 
@@ -32,11 +35,22 @@ export class Hedrite {
 
         // Create tetrahedron geometry and material
         const geometry = new THREE.TetrahedronGeometry(1);
-        const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        const material = new THREE.MeshLambertMaterial({
+            color: 0xaaaaaa, // Light gray color
+        });
 
         // Create tetrahedron mesh
         this.sphere = new THREE.Mesh(geometry, material);
         this.scene.add(this.sphere);
+
+        // Add lighting
+        const directionalLight = new THREE.DirectionalLight("#fff", 3);
+        directionalLight.position.set(-2, 2, 2);
+        this.scene.add(directionalLight);
+
+        // Add ambient light for better visibility
+        const ambientLight = new THREE.AmbientLight("#fff", 0.1);
+        this.scene.add(ambientLight);
 
         // Create GSAP animation for up and down movement
         this.createUpDownAnimation();
