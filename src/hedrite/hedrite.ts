@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { gsap } from "gsap";
 
 export class Hedrite {
     private scene: THREE.Scene;
@@ -37,6 +38,9 @@ export class Hedrite {
         this.sphere = new THREE.Mesh(geometry, material);
         this.scene.add(this.sphere);
 
+        // Create GSAP animation for up and down movement
+        this.createUpDownAnimation();
+
         // Start render loop
         this.animate();
 
@@ -49,6 +53,17 @@ export class Hedrite {
 
         this.renderer.render(this.scene, this.camera);
     };
+
+    private createUpDownAnimation(): void {
+        // Create a simple up and down animation using GSAP
+        gsap.to(this.sphere.position, {
+            y: 0.5,
+            duration: 2,
+            ease: "sine.inOut", // Smooth easing
+            yoyo: true,
+            repeat: -1, // Infinite loop
+        });
+    }
 
     private onWindowResize(): void {
         this.camera.aspect = window.innerWidth / window.innerHeight;
