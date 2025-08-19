@@ -15,6 +15,9 @@ export class Camera {
         this.camera.position.z = 5;
 
         this.setupControls(renderer);
+
+        // Handle window resize
+        window.addEventListener("resize", () => this.onWindowResize());
     }
 
     public setupControls(renderer: THREE.WebGLRenderer): void {
@@ -23,19 +26,16 @@ export class Camera {
 
         // Configure controls
         this.controls.enableDamping = true; // Smooth camera movement
-        this.controls.dampingFactor = 0.05;
-        this.controls.screenSpacePanning = false;
+        this.controls.dampingFactor = 0.3;
+        this.controls.enablePan = false;
 
         // Set zoom limits
         this.controls.minDistance = 2;
         this.controls.maxDistance = 10;
 
-        // Set rotation limits (optional - remove if you want full 360° rotation)
-        this.controls.maxPolarAngle = Math.PI; // Allow full vertical rotation
-
         // Enable auto-rotate (optional - set to false if you don't want auto-rotation)
-        this.controls.autoRotate = false;
-        this.controls.autoRotateSpeed = 0.5;
+        this.controls.autoRotate = true;
+        this.controls.autoRotateSpeed = 1;
 
         // Configure touch controls for mobile
         this.controls.touches = {
@@ -62,6 +62,7 @@ export class Camera {
     }
 
     public dispose(): void {
+        window.removeEventListener("resize", this.onWindowResize);
         this.controls.dispose();
     }
 }

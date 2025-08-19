@@ -6,7 +6,7 @@
     let hedrite: Hedrite | null = null;
 
     onMount(() => {
-        hedrite = new Hedrite(container);
+        hedrite = new Hedrite({ container });
     });
 </script>
 

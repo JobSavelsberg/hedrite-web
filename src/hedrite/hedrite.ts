@@ -1,29 +1,22 @@
 import * as THREE from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { gsap } from "gsap";
 import { Camera } from "./camera";
+import { Renderer } from "./renderer";
+
+export type HedriteContext = {
+    container: HTMLDivElement;
+};
 
 export class Hedrite {
     private scene: THREE.Scene;
     private camera: Camera;
-    private renderer: THREE.WebGLRenderer;
+    private renderer: Renderer;
     private tetra: THREE.Mesh;
 
-    constructor(container: HTMLDivElement) {
-        // Create renderer
-        this.renderer = new THREE.WebGLRenderer({
-            antialias: true,
-            alpha: true,
-        });
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
-        this.renderer.setClearColor(0x000000, 0);
-
-        // Create scene
+    constructor(context: HedriteContext) {
+        this.renderer = new Renderer(context.container);
+        this.camera = new Camera(this.renderer.renderer);
         this.scene = new THREE.Scene();
-        // Append renderer to container
-        container.appendChild(this.renderer.domElement);
-
-        this.camera = new Camera(this.renderer);
 
         // Create tetrahedron geometry and material
         const geometry = new THREE.TetrahedronGeometry(1);
@@ -44,26 +37,6 @@ export class Hedrite {
         const ambientLight = new THREE.AmbientLight("#fff", 0.1);
         this.scene.add(ambientLight);
 
-        // Create GSAP animation for up and down movement
-        this.createUpDownAnimation();
-
-        // Start render loop
-        this.animate();
-
-        // Handle window resize
-        window.addEventListener("resize", () => this.onWindowResize());
-    }
-
-    private animate = (): void => {
-        requestAnimationFrame(this.animate);
-
-        // Update controls
-        this.camera.update();
-
-        this.renderer.render(this.scene, this.camera.camera);
-    };
-
-    private createUpDownAnimation(): void {
         // Create a simple up and down animation using GSAP
         gsap.to(this.tetra.position, {
             y: 0.5,
@@ -72,16 +45,22 @@ export class Hedrite {
             yoyo: true,
             repeat: -1, // Infinite loop
         });
+
+        // Start render loop
+        this.animate();
     }
 
-    private onWindowResize(): void {
-        this.camera.onWindowResize();
-    }
+    private animate = (): void => {
+        requestAnimationFrame(this.animate);
+
+        // Update controls
+        this.camera.update();
+        this.renderer.renderer.render(this.scene, this.camera.camera);
+    };
 
     public dispose(): void {
         // Clean up resources
         this.camera.dispose();
         this.renderer.dispose();
-        window.removeEventListener("resize", this.onWindowResize);
     }
 }
