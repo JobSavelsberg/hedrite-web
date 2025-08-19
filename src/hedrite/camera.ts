@@ -2,8 +2,8 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 export class Camera {
-    public camera: THREE.PerspectiveCamera;
-    private controls!: OrbitControls; // Use definite assignment assertion
+    public readonly camera: THREE.PerspectiveCamera;
+    private readonly controls: OrbitControls; // Use definite assignment assertion
 
     constructor(renderer: THREE.WebGLRenderer) {
         this.camera = new THREE.PerspectiveCamera(
@@ -14,13 +14,6 @@ export class Camera {
         );
         this.camera.position.z = 5;
 
-        this.setupControls(renderer);
-
-        // Handle window resize
-        window.addEventListener("resize", () => this.onWindowResize());
-    }
-
-    public setupControls(renderer: THREE.WebGLRenderer): void {
         // Create OrbitControls for mouse/touch interaction
         this.controls = new OrbitControls(this.camera, renderer.domElement);
 
@@ -49,6 +42,9 @@ export class Camera {
             MIDDLE: THREE.MOUSE.DOLLY,
             RIGHT: THREE.MOUSE.PAN,
         };
+
+        // Handle window resize
+        window.addEventListener("resize", () => this.onWindowResize());
     }
 
     public onWindowResize(): void {
