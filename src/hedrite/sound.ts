@@ -1,33 +1,77 @@
 import * as Tone from "tone";
 
 export class Sound {
+    private gain: Tone.Gain;
     private reverb: Tone.Reverb;
+    private delay: Tone.PingPongDelay;
+    private envs: Tone.AmplitudeEnvelope[] = [];
+    private oscs: Tone.Oscillator[] = [];
+    private readonly nrOscs = 4;
+
     private started = false;
     private readonly cMajor = ["C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5"];
     private disposed = false;
 
-    private osc: Tone.Oscillator;
-    private env: Tone.AmplitudeEnvelope;
-
     constructor() {
-        this.reverb = new Tone.Reverb(2).toDestination();
+        this.gain = new Tone.Gain(0.5).toDestination();
+
+        this.reverb = new Tone.Reverb(2).connect(this.gain);
         this.reverb.wet.value = 0.8;
 
-        this.env = new Tone.AmplitudeEnvelope({
-            attack: 0.02,
-            decay: 1.5,
-            sustain: 0,
-            release: 0.2,
-        }).connect(this.reverb);
+        this.delay = new Tone.PingPongDelay("4n", 0.5).connect(this.reverb);
+        this.delay.wet.value = 0.3;
+        this.delay.feedback.value = 0.4;
 
-        this.osc = new Tone.Oscillator("C4", "sine").connect(this.env).start();
+        for (let i = 0; i < this.nrOscs; i++) {
+            const env = new Tone.AmplitudeEnvelope({
+                attack: 0.005,
+                decay: 1.5,
+                sustain: 0,
+                release: 0.2,
+            }).connect(this.delay);
+            this.envs.push(env);
+        }
+
+        for (let i = 0; i < this.nrOscs; i++) {
+            const osc = new Tone.Oscillator("C4", "sine")
+                .connect(this.envs[i])
+                .start();
+            this.oscs.push(osc);
+        }
     }
 
     public async init(): Promise<void> {
         await Tone.loaded();
     }
 
+    public async playSinePluck(note: string, oscIndex: number) {
+        await this.initAudio();
+
+        const now = Tone.now();
+        this.oscs[oscIndex].frequency.setValueAtTime(note, now);
+        this.envs[oscIndex].triggerAttackRelease(2);
+    }
+
     public async playRandomSinePluck(): Promise<void> {
+        const note =
+            this.cMajor[Math.floor(Math.random() * this.cMajor.length)];
+        this.oscs[0].frequency.setValueAtTime(note, Tone.now());
+        this.envs[0].triggerAttackRelease(2);
+    }
+
+    public async playChord(notes: string[]): Promise<void> {
+        await this.initAudio();
+
+        const strumDelay = 0.1;
+        const now = Tone.now();
+        notes.forEach((note, index) => {
+            const startTime = now + strumDelay * index;
+            this.oscs[index].frequency.setValueAtTime(note, startTime);
+            this.envs[index].triggerAttackRelease(2, startTime);
+        });
+    }
+
+    private async initAudio(): Promise<void> {
         if (this.disposed) {
             return;
         }
@@ -41,11 +85,6 @@ export class Sound {
         if (Tone.context.state === "suspended") {
             await Tone.context.resume();
         }
-
-        const note =
-            this.cMajor[Math.floor(Math.random() * this.cMajor.length)];
-        this.osc.frequency.setValueAtTime(note, Tone.now());
-        this.env.triggerAttackRelease(2);
     }
 
     public dispose(): void {

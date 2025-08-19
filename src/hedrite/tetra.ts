@@ -12,6 +12,8 @@ export class Tetra implements IInteractable {
     private readonly emissiveColor = 0xffffff;
     private readonly emissiveIntensity = 0.05;
 
+    private notes: string[] = ["C3", "E4", "G4", "B4"];
+
     constructor(private readonly sound: Sound) {
         // Create tetrahedron geometry and material
         const geometry = new THREE.TetrahedronGeometry(1);
@@ -62,7 +64,7 @@ export class Tetra implements IInteractable {
     }
 
     public async onPointerDown(point: THREE.Vector3): Promise<void> {
-        this.sound.playRandomSinePluck();
+        this.sound.playChord(this.notes);
 
         const originalColor = this.color;
         const flashColor = 0x00ff00;
