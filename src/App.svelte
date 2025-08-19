@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { onMount } from "svelte";
+    import { onMount, onDestroy } from "svelte";
     import { Hedrite } from "./hedrite/hedrite";
 
     let container: HTMLDivElement;
@@ -7,6 +7,13 @@
 
     onMount(() => {
         hedrite = new Hedrite({ container });
+    });
+
+    onDestroy(() => {
+        if (hedrite) {
+            hedrite.dispose();
+            hedrite = null;
+        }
     });
 </script>
 

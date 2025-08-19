@@ -3,6 +3,7 @@ import { Camera } from "./camera";
 import { Renderer } from "./renderer";
 import { Tetra } from "./tetra";
 import { Interaction } from "./interaction";
+import { Sound } from "./sound";
 
 export type HedriteContext = {
     container: HTMLDivElement;
@@ -17,6 +18,7 @@ export class Hedrite {
     private readonly camera: Camera;
     private readonly renderer: Renderer;
     private readonly interaction: Interaction;
+    private readonly sound: Sound;
 
     private readonly tetras: Tetra[] = [];
     private readonly directionalLight: THREE.DirectionalLight;
@@ -26,6 +28,7 @@ export class Hedrite {
         this.camera = new Camera(this.renderer.renderer);
         this.interaction = new Interaction(this.camera.camera);
         this.scene = new THREE.Scene();
+        this.sound = new Sound();
 
         // Add lighting
         this.directionalLight = new THREE.DirectionalLight("#fff", 3);
@@ -36,7 +39,7 @@ export class Hedrite {
         const ambientLight = new THREE.AmbientLight("#fff", 0.1);
         this.scene.add(ambientLight);
 
-        this.tetras.push(new Tetra());
+        this.tetras.push(new Tetra(this.sound));
         this.tetras.forEach(tetra => {
             this.interaction.addInteractable(tetra);
             this.scene.add(tetra.mesh);
@@ -65,6 +68,7 @@ export class Hedrite {
 
     public dispose(): void {
         // Clean up resources
+        this.sound.dispose();
         this.interaction.dispose();
         this.camera.dispose();
         this.renderer.dispose();

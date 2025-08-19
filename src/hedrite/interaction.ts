@@ -3,7 +3,7 @@ import * as THREE from "three";
 export interface IInteractable {
     getObject3D(): THREE.Object3D;
     setHover(isHovered: boolean, intersectionPoint: THREE.Vector3): void;
-    onClick(intersectionPoint: THREE.Vector3): void;
+    onPointerDown(intersectionPoint: THREE.Vector3): void;
 }
 
 export class Interaction {
@@ -17,7 +17,7 @@ export class Interaction {
         this.camera = camera;
         this.raycaster = new THREE.Raycaster();
         window.addEventListener("pointermove", this.onPointerMove);
-        window.addEventListener("click", this.onClick);
+        window.addEventListener("pointerdown", this.onPointerDown);
     }
 
     public addInteractable(interactable: IInteractable): void {
@@ -30,7 +30,7 @@ export class Interaction {
         this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
     };
 
-    private onClick = (event: MouseEvent): void => {
+    private onPointerDown = (event: PointerEvent): void => {
         // Update mouse position for click
         this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
         this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -47,7 +47,7 @@ export class Interaction {
                 i => i.getObject3D() === intersects[0].object
             );
             if (interactable) {
-                interactable.onClick(intersectPoint);
+                interactable.onPointerDown(intersectPoint);
             }
         }
     };
@@ -84,6 +84,6 @@ export class Interaction {
     public dispose() {
         // Clean up event listeners
         window.removeEventListener("pointermove", this.onPointerMove);
-        window.removeEventListener("click", this.onClick);
+        window.removeEventListener("pointerdown", this.onPointerDown);
     }
 }
