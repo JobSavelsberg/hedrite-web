@@ -5,10 +5,10 @@ export class Camera {
     public readonly camera: THREE.PerspectiveCamera;
     private readonly controls: OrbitControls; // Use definite assignment assertion
 
-    constructor(renderer: THREE.WebGLRenderer) {
+    constructor(private readonly renderer: THREE.WebGLRenderer) {
         this.camera = new THREE.PerspectiveCamera(
             50, // field of view
-            window.innerWidth / window.innerHeight, // aspect ratio
+            renderer.domElement.clientWidth / renderer.domElement.clientHeight, // aspect ratio
             0.1, // near clipping plane
             1000 // far clipping plane
         );
@@ -48,7 +48,9 @@ export class Camera {
     }
 
     public onWindowResize(): void {
-        this.camera.aspect = window.innerWidth / window.innerHeight;
+        this.camera.aspect =
+            this.renderer.domElement.clientWidth /
+            this.renderer.domElement.clientHeight;
         this.camera.updateProjectionMatrix();
         this.controls.update();
     }

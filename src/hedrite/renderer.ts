@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { contain } from "three/src/extras/TextureUtils";
 
 export class Renderer {
     public renderer: THREE.WebGLRenderer;
@@ -9,7 +10,8 @@ export class Renderer {
             antialias: true,
             alpha: true,
         });
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
+
+        this.renderer.setSize(container.clientWidth, container.clientHeight);
         this.renderer.setClearColor(0x000000, 0);
 
         container.appendChild(this.renderer.domElement);
