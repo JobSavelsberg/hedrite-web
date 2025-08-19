@@ -23,3 +23,4 @@ npm run dev
 - Three.js
 - GSAP
 - Vite
+- Tone.js
