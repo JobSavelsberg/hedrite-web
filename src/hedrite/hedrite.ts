@@ -1,7 +1,7 @@
 import * as THREE from "three";
-import { gsap } from "gsap";
 import { Camera } from "./camera";
 import { Renderer } from "./renderer";
+import { Tetra } from "./tetra";
 
 export type HedriteContext = {
     container: HTMLDivElement;
@@ -11,22 +11,12 @@ export class Hedrite {
     private scene: THREE.Scene;
     private camera: Camera;
     private renderer: Renderer;
-    private tetra: THREE.Mesh;
+    private tetra: Tetra;
 
     constructor(context: HedriteContext) {
         this.renderer = new Renderer(context.container);
         this.camera = new Camera(this.renderer.renderer);
         this.scene = new THREE.Scene();
-
-        // Create tetrahedron geometry and material
-        const geometry = new THREE.TetrahedronGeometry(1);
-        const material = new THREE.MeshLambertMaterial({
-            color: 0xaaaaaa, // Light gray color
-        });
-
-        // Create tetrahedron mesh
-        this.tetra = new THREE.Mesh(geometry, material);
-        this.scene.add(this.tetra);
 
         // Add lighting
         const directionalLight = new THREE.DirectionalLight("#fff", 3);
@@ -37,14 +27,8 @@ export class Hedrite {
         const ambientLight = new THREE.AmbientLight("#fff", 0.1);
         this.scene.add(ambientLight);
 
-        // Create a simple up and down animation using GSAP
-        gsap.to(this.tetra.position, {
-            y: 0.5,
-            duration: 2,
-            ease: "sine.inOut", // Smooth easing
-            yoyo: true,
-            repeat: -1, // Infinite loop
-        });
+        this.tetra = new Tetra();
+        this.scene.add(this.tetra.mesh);
 
         // Start render loop
         this.animate();
