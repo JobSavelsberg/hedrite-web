@@ -2,8 +2,12 @@ import * as THREE from "three";
 
 export interface IInteractable {
     getObject3D(): THREE.Object3D;
-    setHover(isHovered: boolean, intersectionPoint: THREE.Vector3): void;
-    onPointerDown(intersectionPoint: THREE.Vector3): void;
+    setHover(
+        isHovered: boolean,
+        intersectionPoint: THREE.Intersection | null
+    ): void;
+    onPointerDown(intersection: THREE.Intersection): void;
+    onContextMenu(intersection: THREE.Intersection): void;
 }
 
 export class Interaction {
@@ -18,6 +22,7 @@ export class Interaction {
         this.raycaster = new THREE.Raycaster();
         window.addEventListener("pointermove", this.onPointerMove);
         window.addEventListener("pointerdown", this.onPointerDown);
+        window.addEventListener("contextmenu", this.onContextMenu);
     }
 
     public addInteractable(interactable: IInteractable): void {
@@ -31,53 +36,62 @@ export class Interaction {
     };
 
     private onPointerDown = (event: PointerEvent): void => {
-        // Update mouse position for click
-        this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-        this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        if (event.button != 0) return; // Not a left click
+        const intersection = this.rayCast();
 
-        // Perform raycasting
-        this.raycaster.setFromCamera(this.mouse, this.camera);
-        const intersects = this.raycaster.intersectObjects(
-            this.interactables.map(i => i.getObject3D())
-        );
-
-        if (intersects.length > 0 && intersects[0] !== undefined) {
-            const intersectPoint = intersects[0].point;
-            const interactable = this.interactables.find(
-                i => i.getObject3D() === intersects[0].object
-            );
-            if (interactable) {
-                interactable.onPointerDown(intersectPoint);
-            }
+        if (intersection) {
+            intersection.interactable.onPointerDown(intersection.intersection);
         }
     };
 
-    public update(camera: THREE.Camera): void {
-        this.raycaster.setFromCamera(this.mouse, camera);
+    public onContextMenu = (event: PointerEvent): void => {
+        event.preventDefault();
 
-        // calculate objects intersecting the picking ray
-        const intersects = this.raycaster.intersectObjects(
+        // Perform raycasting
+        const intersection = this.rayCast();
+
+        if (intersection) {
+            intersection.interactable.onContextMenu(intersection.intersection);
+        }
+    };
+
+    public rayCast(): {
+        interactable: IInteractable;
+        intersection: THREE.Intersection;
+    } | null {
+        this.raycaster.setFromCamera(this.mouse, this.camera);
+        const intersections = this.raycaster.intersectObjects(
             this.interactables.map(i => i.getObject3D())
         );
 
-        if (intersects.length > 0 && intersects[0] !== undefined) {
-            const intersectPoint = intersects[0].point;
+        if (intersections.length > 0 && intersections[0] !== undefined) {
             const interactable = this.interactables.find(
-                i => i.getObject3D() === intersects[0].object
+                i => i.getObject3D() === intersections[0].object
             );
             if (interactable) {
-                interactable.setHover(true, intersectPoint);
-                // Set all other interactable hovers to false
-                this.interactables.forEach(i => {
-                    if (i !== interactable) {
-                        interactable.setHover(false, new THREE.Vector3());
-                    }
-                });
+                return {
+                    interactable,
+                    intersection: intersections[0],
+                };
             }
+        }
+
+        return null;
+    }
+
+    public update(camera: THREE.Camera): void {
+        const intersection = this.rayCast();
+
+        if (intersection) {
+            intersection.interactable.setHover(true, intersection.intersection);
+            // Set all other interactable hovers to false
+            this.interactables.forEach(i => {
+                if (i !== intersection.interactable) {
+                    i.setHover(false, null);
+                }
+            });
         } else {
-            this.interactables.forEach(i =>
-                i.setHover(false, new THREE.Vector3())
-            );
+            this.interactables.forEach(i => i.setHover(false, null));
         }
     }
 
@@ -85,5 +99,6 @@ export class Interaction {
         // Clean up event listeners
         window.removeEventListener("pointermove", this.onPointerMove);
         window.removeEventListener("pointerdown", this.onPointerDown);
+        window.removeEventListener("contextmenu", this.onContextMenu);
     }
 }

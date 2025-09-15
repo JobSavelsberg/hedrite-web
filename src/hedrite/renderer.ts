@@ -1,5 +1,4 @@
 import * as THREE from "three";
-import { contain } from "three/src/extras/TextureUtils";
 
 export class Renderer {
     public renderer: THREE.WebGLRenderer;

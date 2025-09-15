@@ -4,6 +4,8 @@ import { Renderer } from "./renderer";
 import { Tetra } from "./tetra";
 import { Interaction } from "./interaction";
 import { Sound } from "./sound";
+import { DebugHelper } from "./debugHelper";
+import { TetraDebugHelper } from "./tetraDebugHelper";
 
 export type HedriteContext = {
     container: HTMLDivElement;
@@ -14,6 +16,15 @@ export class Hedrite {
         100
     );
 
+    private readonly lightOffset2 = new THREE.Vector3(1, -1, 3).multiplyScalar(
+        10
+    );
+    private readonly lightOffset3 = new THREE.Vector3(
+        -1,
+        -1,
+        -1
+    ).multiplyScalar(10);
+
     private readonly scene: THREE.Scene;
     private readonly camera: Camera;
     private readonly renderer: Renderer;
@@ -22,12 +33,15 @@ export class Hedrite {
 
     private readonly tetras: Tetra[] = [];
     private readonly directionalLight: THREE.DirectionalLight;
+    private readonly directionalLight2: THREE.DirectionalLight;
+    private readonly directionalLight3: THREE.DirectionalLight;
 
     constructor(context: HedriteContext) {
         this.renderer = new Renderer(context.container);
         this.camera = new Camera(this.renderer.renderer);
         this.interaction = new Interaction(this.camera.camera);
         this.scene = new THREE.Scene();
+        DebugHelper.scene = this.scene;
         this.sound = new Sound();
 
         // Add lighting
@@ -35,18 +49,39 @@ export class Hedrite {
         this.directionalLight.position.copy(this.lightOffset);
         this.scene.add(this.directionalLight);
 
+        this.directionalLight2 = new THREE.DirectionalLight(
+            "rgba(166, 133, 0, 1)",
+            2
+        );
+        this.directionalLight2.position.copy(this.lightOffset2);
+        this.scene.add(this.directionalLight2);
+
+        this.directionalLight3 = new THREE.DirectionalLight(
+            "rgba(30, 67, 151, 1)",
+            2
+        );
+        this.directionalLight3.position.copy(this.lightOffset3);
+        this.scene.add(this.directionalLight3);
+
         // Add ambient light for better visibility
-        const ambientLight = new THREE.AmbientLight("#fff", 0.1);
+        const ambientLight = new THREE.AmbientLight("#fff", 0.02);
         this.scene.add(ambientLight);
 
-        this.tetras.push(new Tetra(this.sound));
-        this.tetras.forEach(tetra => {
-            this.interaction.addInteractable(tetra);
-            this.scene.add(tetra.mesh);
-        });
+        const tetra = new Tetra(this.sound, this.onAttachTetra);
+        this.addTetra(tetra);
 
         // Start render loop
         this.animate();
+    }
+
+    private onAttachTetra = (tetra: Tetra): void => {
+        this.addTetra(tetra);
+    };
+
+    private addTetra(tetra: Tetra): void {
+        this.tetras.push(tetra);
+        this.interaction.addInteractable(tetra);
+        this.scene.add(tetra.getObject3D());
     }
 
     private animate = (): void => {
