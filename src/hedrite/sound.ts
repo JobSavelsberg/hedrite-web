@@ -25,7 +25,7 @@ export class Sound {
         for (let i = 0; i < this.nrOscs; i++) {
             const env = new Tone.AmplitudeEnvelope({
                 attack: 0.005,
-                decay: 1.5,
+                decay: 4.5,
                 sustain: 0,
                 release: 0.2,
             }).connect(this.delay);
@@ -69,6 +69,20 @@ export class Sound {
             this.oscs[index].frequency.setValueAtTime(note, startTime);
             this.envs[index].triggerAttackRelease(2, startTime);
         });
+
+        // Play bass note - one octave lower than the root note
+        const bassNote = notes[0].replace(/\d/, match =>
+            (parseInt(match) - 1).toString()
+        );
+        const bassStartTime = now;
+        this.oscs[notes.length % this.nrOscs].frequency.setValueAtTime(
+            bassNote,
+            bassStartTime
+        );
+        this.envs[notes.length % this.nrOscs].triggerAttackRelease(
+            2,
+            bassStartTime
+        );
     }
 
     private async initAudio(): Promise<void> {
@@ -93,8 +107,6 @@ export class Sound {
         }
 
         this.disposed = true;
-        this.osc.dispose();
-        this.env.dispose();
         this.reverb.dispose();
     }
 }
