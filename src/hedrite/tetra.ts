@@ -19,7 +19,8 @@ export class Tetra implements IInteractable {
 
     constructor(
         private readonly sound: Sound,
-        private onAttachTetra: (tetra: Tetra) => void
+        private onAttachTetra: (tetra: Tetra) => void,
+        private onPlayTetra: (tetra: Tetra) => void
     ) {
         // Create tetrahedron geometry and material
         this.mesh = TetraMesh.CreateWithEdgeLength(1);
@@ -86,6 +87,8 @@ export class Tetra implements IInteractable {
                 duration: 0.8,
                 ease: "power2.out",
             });
+
+        this.onPlayTetra(this);
     }
 
     public onContextMenu(intersection: THREE.Intersection): void {
@@ -97,7 +100,11 @@ export class Tetra implements IInteractable {
     }
 
     public static FromTetraFace(fromTetra: Tetra, face: THREE.Face): Tetra {
-        const newTetra = new Tetra(fromTetra.sound, fromTetra.onAttachTetra);
+        const newTetra = new Tetra(
+            fromTetra.sound,
+            fromTetra.onAttachTetra,
+            fromTetra.onPlayTetra
+        );
 
         // Construct new tetra from clicked face
         const faceIndex = TetraMesh.getFaceIndex(face);

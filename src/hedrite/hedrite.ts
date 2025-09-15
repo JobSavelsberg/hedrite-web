@@ -67,7 +67,11 @@ export class Hedrite {
         const ambientLight = new THREE.AmbientLight("#fff", 0.02);
         this.scene.add(ambientLight);
 
-        const tetra = new Tetra(this.sound, this.onAttachTetra);
+        const tetra = new Tetra(
+            this.sound,
+            this.onAttachTetra,
+            this.onPlayTetra
+        );
         this.addTetra(tetra);
 
         // Start render loop
@@ -77,6 +81,8 @@ export class Hedrite {
     private onAttachTetra = (tetra: Tetra): void => {
         this.addTetra(tetra);
     };
+
+    private onPlayTetra = (tetra: Tetra): void => {};
 
     private addTetra(tetra: Tetra): void {
         this.tetras.push(tetra);
