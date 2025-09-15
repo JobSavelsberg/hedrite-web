@@ -82,6 +82,9 @@ export class Hedrite {
         this.tetras.push(tetra);
         this.interaction.addInteractable(tetra);
         this.scene.add(tetra.getObject3D());
+
+        // Focus camera on the newly added tetra
+        this.camera.focusOn(tetra.getObject3D().position, 700);
     }
 
     private animate = (): void => {

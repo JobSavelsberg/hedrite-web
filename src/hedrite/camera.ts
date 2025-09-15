@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import gsap from "gsap";
 
 export class Camera {
     public readonly camera: THREE.PerspectiveCamera;
@@ -45,6 +46,37 @@ export class Camera {
 
         // Handle window resize
         window.addEventListener("resize", () => this.onWindowResize());
+    }
+
+    /**
+     * Focuses the camera on a specific target position.
+     * @param target The position to focus on
+     * @param duration Duration of the focus transition in milliseconds
+     */
+    public focusOn(target: THREE.Vector3, duration: number = 0): void {
+        const direction = new THREE.Vector3()
+            .subVectors(this.camera.position, target)
+            .normalize();
+        const distance = this.camera.position.distanceTo(this.controls.target);
+        const newPosition = direction.multiplyScalar(distance).add(target);
+
+        // Animate camera position
+        gsap.to(this.camera.position, {
+            duration: duration / 1000, // Convert milliseconds to seconds
+            x: newPosition.x,
+            y: newPosition.y,
+            z: newPosition.z,
+            ease: "power3.out",
+        });
+
+        // Animate controls target
+        gsap.to(this.controls.target, {
+            duration: duration / 1000,
+            x: target.x,
+            y: target.y,
+            z: target.z,
+            ease: "power3.out",
+        });
     }
 
     public onWindowResize(): void {
