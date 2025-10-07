@@ -4,18 +4,31 @@ import type { IInteractable } from "./interaction";
 import type { Sound } from "./sound";
 import { DebugHelper } from "./debugHelper";
 import { TetraMesh } from "./tetraMesh";
+import { notesToColor } from "./tonality";
 
 export class Tetra implements IInteractable {
     private isHovered = false;
 
     private material: THREE.MeshLambertMaterial;
-    private readonly color = 0xcfb9f5;
     private readonly emissiveColor = 0xffffff;
     private readonly emissiveIntensity = 0.05;
 
     public mesh: TetraMesh;
 
     private notes: string[] = ["C4", "E4", "G4", "B4"];
+
+    private get color(): number {
+        // Remove octave numbers from notes and calculate tonal color
+        const pureNotes = this.notes.map(note =>
+            note.substring(0, note.length - 1)
+        );
+        const hslColor = notesToColor(pureNotes);
+
+        // Make the color slightly pastel by reducing saturation
+        const threeColor = new THREE.Color(hslColor);
+        const pastelColor = threeColor.lerp(new THREE.Color(0xaaaaaa), 0.15);
+        return pastelColor.getHex();
+    }
 
     constructor(
         private readonly sound: Sound,
@@ -31,6 +44,12 @@ export class Tetra implements IInteractable {
         });
 
         this.mesh.mesh.material = this.material;
+        this.updateMaterialColor();
+    }
+
+    private updateMaterialColor(): void {
+        const color = this.color;
+        this.material.color.set(color);
     }
 
     public getObject3D(): THREE.Mesh {
@@ -118,6 +137,7 @@ export class Tetra implements IInteractable {
         const mesh = TetraMesh.CreateOnFace(fromTetra.mesh, face);
         newTetra.mesh = mesh;
         newTetra.mesh.mesh.material = newTetra.material;
+        newTetra.updateMaterialColor();
 
         newTetra.onPointerDown();
         // Rotate the new tetrahedron to align with the face normal
@@ -187,6 +207,11 @@ export class Tetra implements IInteractable {
         // Find the closest note on the circle that is not yet used
         // Convert normalized vector back to angle
         const targetAngle = Math.atan2(normalizedVector.y, normalizedVector.x);
+
+        // Add some randomness to the angle to avoid always picking the same note
+        const randomOffset = (Math.random() - 0.5) * (Math.PI / 6);
+        const targetAngleWithNoise = targetAngle + randomOffset;
+
         let bestIndex = -1;
         let bestDistance = Infinity;
 
@@ -196,7 +221,7 @@ export class Tetra implements IInteractable {
             if (![...pureNotes, ...pureAvoidNotes].includes(note)) {
                 const noteAngle = (i / circleOfFitfths.length) * 2 * Math.PI;
                 // Calculate angular distance (considering circular nature)
-                let distance = Math.abs(targetAngle - noteAngle);
+                let distance = Math.abs(targetAngleWithNoise - noteAngle);
                 if (distance > Math.PI) {
                     distance = 2 * Math.PI - distance;
                 }

@@ -49,22 +49,8 @@ export class Hedrite {
         this.directionalLight.position.copy(this.lightOffset);
         this.scene.add(this.directionalLight);
 
-        this.directionalLight2 = new THREE.DirectionalLight(
-            "rgba(166, 133, 0, 1)",
-            2
-        );
-        this.directionalLight2.position.copy(this.lightOffset2);
-        this.scene.add(this.directionalLight2);
-
-        this.directionalLight3 = new THREE.DirectionalLight(
-            "rgba(30, 67, 151, 1)",
-            2
-        );
-        this.directionalLight3.position.copy(this.lightOffset3);
-        this.scene.add(this.directionalLight3);
-
         // Add ambient light for better visibility
-        const ambientLight = new THREE.AmbientLight("#fff", 0.02);
+        const ambientLight = new THREE.AmbientLight("#fff", 0.1);
         this.scene.add(ambientLight);
 
         const tetra = new Tetra(
